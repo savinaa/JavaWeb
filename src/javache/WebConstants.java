@@ -5,5 +5,7 @@ public final class WebConstants {
 
     public static final String SERVER_HTTP_VERSION = "HTTP/1.1";
 
+    public static final String SERVER_SESSION_KEY="JAVACHE_SESSION_ID";
+
     private WebConstants() { }
 }

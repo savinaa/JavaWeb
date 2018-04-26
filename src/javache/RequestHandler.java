@@ -18,6 +18,10 @@ public class RequestHandler {
 
     public HttpSession session;
 
+    String resourcesFolder = System.getProperty("user.dir") + "\\src\\resources";
+    String staticResourcesFolder = resourcesFolder + "\\assets";
+    String dynamicResourcesFolder = resourcesFolder + "\\pages";
+
     RequestHandler(HttpSession session) {
         this.session = session;
     }
@@ -59,9 +63,7 @@ public class RequestHandler {
     }
 
     public byte[] identifyUrl(String url) {
-        String resourcesFolder = System.getProperty("user.dir") + "\\src\\resources";
-        String staticResourcesFolder = resourcesFolder + "\\assets";
-        String dynamicResourcesFolder = resourcesFolder + "\\pages";
+
 
         if ("/login".equals(url)) {
             String email = httpRequest.getBodyParameters().get("email");
@@ -78,6 +80,14 @@ public class RequestHandler {
                 return BadRequest(pageAnswer);
             }
             String sessionId = UUID.randomUUID().toString();
+            this.session.setSessionData(sessionId,new HashMap<String,Object>(){
+                {
+                    put("userId",existingUser.getId());
+                }
+            });
+            this.httpResponse.addCookie(WebConstants.SERVER_SESSION_KEY,sessionId);
+            httpResponse.addHeader("Location","/users/profile");
+            return Redirect(new byte[0]);
 
         } else if ("/register".equals(url)) {
             String email = httpRequest.getBodyParameters().get("email");
@@ -117,7 +127,16 @@ public class RequestHandler {
                 e.printStackTrace();
             }
 
-        } else if ("/css/bootstrap.min.css".equals(url)) {
+        }
+        else if ("/login.html".equals(url)) {
+            try {
+                byte[] fileContent = Files.readAllBytes(Paths.get(staticResourcesFolder + "\\html\\login.html"));
+                return Ok(fileContent);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }else if ("/css/bootstrap.min.css".equals(url)) {
             try {
                 byte[] fileContent = Files.readAllBytes(Paths.get(staticResourcesFolder + "\\css\\bootstrap.min.css"));
                 this.httpResponse.setStatusCode(HttpStatus.OK);
